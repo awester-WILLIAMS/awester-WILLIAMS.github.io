@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+    name: mkdocs-site-route
+    labels:
+        app: mkdocs-site
+spec:
+    to:
+        kind: Service
+        name: mkdocs-site
+    port:
+        targetPort: http
+    tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect

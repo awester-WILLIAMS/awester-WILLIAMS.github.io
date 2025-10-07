@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mkdocs-site
+    labels:
+        app: mkdocs-site
+    annotations:
+        openshift.io/scc: anyuid # Or another appropriate SCC
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: mkdocs-site
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 0
+    template:
+        metadata:
+            labels:
+                app: mkdocs-site
+        spec:
+            containers:
+                - name: mkdocs
+                  image: quay.io/bkribbs15/ocp-day2:v8
+                  ports:
+                      - containerPort: 8080
+                        name: http
+                  resources:
+                      limits:
+                          cpu: "500m"
+                          memory: "512Mi"
+                      requests:
+                          cpu: "200m"
+                          memory: "256Mi"
+                  securityContext:
+                      runAsNonRoot: true
+                      allowPrivilegeEscalation: false
+                  volumeMounts:
+                      - name: nginx-config
+                        mountPath: /etc/nginx/conf.d
+            imagePullSecrets:
+                - name: bkribbs15-pull-secret
+            volumes:
+                - name: nginx-config
+                  configMap:
+                      name: nginx-config
+                      items:
+                          - key: nginx.conf
+                            path: default.conf
